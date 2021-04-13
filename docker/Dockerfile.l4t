@@ -1,5 +1,7 @@
 FROM nvcr.io/nvidia/l4t-tensorflow:r32.5.0-tf1.15-py3
 
+ENV TF_RUNTIME=L4T
+
 RUN unlink /usr/bin/python && ln -s /usr/bin/python3 /usr/bin/python
 
 WORKDIR /app

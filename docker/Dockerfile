@@ -1,5 +1,7 @@
 FROM nvcr.io/nvidia/tensorflow:21.03-tf1-py3
 
+ENV TF_RUNTIME=AMD64
+
 WORKDIR /app
 
 COPY ./ /app
