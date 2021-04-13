@@ -1,7 +1,26 @@
 FROM nvcr.io/nvidia/l4t-tensorflow:r32.5.0-tf1.15-py3
 
+RUN unlink /usr/bin/python && ln -s /usr/bin/python3 /usr/bin/python
+
 WORKDIR /app
 
-COPY ../ /app
+COPY ./ /app
+
+WORKDIR /app/tf_ops
+RUN ./tf_link.sh
 
 WORKDIR /app/tf_ops/3d_interpolation
+RUN ./tf_interpolate_compile.sh
+
+WORKDIR /app/tf_ops/grouping_ring
+RUN ./tf_grouping_ring_compile.sh
+
+WORKDIR /app/tf_ops/ordering
+RUN ./tf_ordering_compile.sh
+
+WORKDIR /app/tf_ops/sampling
+RUN ./tf_sampling_compile.sh
+
+WORKDIR /app
+
+CMD /bin/bash

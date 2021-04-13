@@ -4,11 +4,14 @@ WORKDIR /app
 
 COPY ./ /app
 
+WORKDIR /app/tf_ops
+RUN ./tf_link.sh
+
 WORKDIR /app/tf_ops/3d_interpolation
 RUN ./tf_interpolate_compile.sh
 
 WORKDIR /app/tf_ops/grouping_ring
-RUN ./tf_grouping_ring.sh
+RUN ./tf_grouping_ring_compile.sh
 
 WORKDIR /app/tf_ops/ordering
 RUN ./tf_ordering_compile.sh
