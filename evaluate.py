@@ -4,6 +4,7 @@ import argparse
 import socket
 import importlib
 import time
+from timeit import default_timer as timer
 import os
 # import scipy.misc
 import sys
@@ -108,6 +109,9 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
     total_seen_class = [0 for _ in range(NUM_CLASSES)]
     total_correct_class = [0 for _ in range(NUM_CLASSES)]
 
+    mean_elapsed_time = 0
+    n_time_measures = 0
+
     while TEST_DATASET.has_next_batch():
         batch_data, batch_label = TEST_DATASET.next_batch(augment=False)
         bsize = batch_data.shape[0]
@@ -130,7 +134,12 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
                          ops['labels_pl']: cur_batch_label,
                          ops['normals_pl']: cur_batch_normals,
                          ops['is_training_pl']: is_training}
+            t_start = timer()
             loss_val, pred_val = sess.run([ops['loss'], ops['pred']], feed_dict=feed_dict)
+            t_elapsed = timer() - t_start
+            mean_elapsed_time = (mean_elapsed_time * n_time_measures + t_elapsed) / (n_time_measures + 1)
+            n_time_measures += 1
+            print(f"Time elapsed for batch: {t_elapsed} Mean time: {mean_elapsed_time}") 
             batch_pred_sum += pred_val
         pred_val = np.argmax(batch_pred_sum, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
@@ -146,6 +155,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
     log_string('eval mean loss: %f' % (loss_sum / float(batch_idx)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
+    log_string('mean batch inference time: %f' % mean_elapsed_time)
 
     class_accuracies = np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float)
     for i, name in enumerate(SHAPE_NAMES):
